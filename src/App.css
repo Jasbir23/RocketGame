@@ -9,3 +9,7 @@
 .asteroid {
   position: absolute;
 }
+.bullets {
+  position: absolute;
+  background: red;
+}
