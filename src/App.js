@@ -50,11 +50,11 @@ class App extends React.Component {
   }
 
   insertNewFireBullet(xpos, ypos) {
-    // debugger
+    // console.log('pos: ', xpos)
     const leftMargin = xpos;
     return ({
       style: {
-        bottom: 0,
+        bottom: 1,
         left: leftMargin,
         height: 10,
         width: 5,
@@ -65,7 +65,7 @@ class App extends React.Component {
   }
 
   fire (e) {
-    this.state.firebullets.push(this.insertNewFireBullet(e.screenX, e.screenY))
+    this.state.firebullets.push(this.insertNewFireBullet(e.screenX - 40, e.screenY))
     console.log('fire: ', this.state.firebullets);
   }
 
@@ -127,6 +127,7 @@ class App extends React.Component {
           })
           if(bullet.center[1] < 0) {
             this.state.firebullets.splice(index, 1);
+            setTimeout(()=> { this.state.allAsteroids.push(this.insertNewAsteroid()) }, 1000)
           }
           bullet.style = {
             ...bullet.style,
