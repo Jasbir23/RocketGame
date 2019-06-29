@@ -1,11 +1,70 @@
 .mainContainer {
-  text-align: center;
   width: 100%;
   height: 100%;
-  background: grey;
+  background: black;
   position: absolute;
   overflow: hidden;
+  user-select: none;
 }
-.asteroid {
+.bg {
+  height: 100%;
+  width: 100%;
   position: absolute;
+  top: 0;
+}
+.gameOverlay {
+  height: 100%;
+  width: 100%;
+  position: absolute;
+  top: -100%;
+  background: black;
+  opacity: 0.7;
+  font-size: 45px;
+  flex-direction: column;
+  color: white;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.visible {
+  top: 0%;
+}
+.rocketContainer {
+  position: absolute;
+  width: 50px;
+  height: 100px;
+  bottom: 120px;
+}
+.box {
+  height: 100px;
+  width: 100px;
+  position: absolute;
+  transform: translateY(-20vh);
+  animation: moveDown 8s linear;
+}
+.button {
+  top: 0px;
+  height: 100%;
+  width: 50%;
+  position: absolute;
+}
+.leftBut {
+  left: 0%;
+}
+.rightBut {
+  left: 50%;
+}
+.tiltLeft {
+  transform: rotate(-20deg);
+}
+.tiltRight {
+  transform: rotate(20deg);
+}
+@keyframes moveDown {
+  0% {
+    transform: translateY(-20vh);
+  }
+  100% {
+    transform: translateY(125vh);
+  }
 }
