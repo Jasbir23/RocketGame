@@ -2,6 +2,7 @@
   "name": "rocket_game",
   "version": "0.1.0",
   "private": true,
+  "homepage": "https://jasbir23.github.io/RocketGame/",
   "dependencies": {
     "lottie-web": "^5.5.4",
     "react": "^16.8.6",
