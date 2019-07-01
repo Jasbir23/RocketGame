@@ -1,14 +1,14 @@
 {
   "files": {
     "main.css": "/RocketGame/static/css/main.3e412261.chunk.css",
-    "main.js": "/RocketGame/static/js/main.6b935e49.chunk.js",
-    "main.js.map": "/RocketGame/static/js/main.6b935e49.chunk.js.map",
+    "main.js": "/RocketGame/static/js/main.e064de65.chunk.js",
+    "main.js.map": "/RocketGame/static/js/main.e064de65.chunk.js.map",
     "runtime~main.js": "/RocketGame/static/js/runtime~main.ab3e2934.js",
     "runtime~main.js.map": "/RocketGame/static/js/runtime~main.ab3e2934.js.map",
     "static/js/2.df410ec5.chunk.js": "/RocketGame/static/js/2.df410ec5.chunk.js",
     "static/js/2.df410ec5.chunk.js.map": "/RocketGame/static/js/2.df410ec5.chunk.js.map",
     "index.html": "/RocketGame/index.html",
-    "precache-manifest.3e6c5705fbfd4da62ecc89f7ddd01aad.js": "/RocketGame/precache-manifest.3e6c5705fbfd4da62ecc89f7ddd01aad.js",
+    "precache-manifest.cae3e4a2b22396a656b7da687c0e5059.js": "/RocketGame/precache-manifest.cae3e4a2b22396a656b7da687c0e5059.js",
     "service-worker.js": "/RocketGame/service-worker.js",
     "static/css/main.3e412261.chunk.css.map": "/RocketGame/static/css/main.3e412261.chunk.css.map"
   }
