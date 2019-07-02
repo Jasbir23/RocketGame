@@ -31,6 +31,9 @@ class App extends React.Component {
     this.initializeRocket();
     this.startGame();
   }
+  componentWillUnmount() {
+    window.cancelAnimationFrame(this.gameLoop);
+  }
   initializeBg() {
     this.bg = lottie.loadAnimation({
       container: this.continerRef,
@@ -42,7 +45,6 @@ class App extends React.Component {
       },
       animationData: require(`./assets/spaceBg.json`) // the path to the animation json
     });
-    this.bg.setSpeed(0.6);
   }
   initializeRocket() {
     this.rocket = lottie.loadAnimation({
@@ -60,7 +62,8 @@ class App extends React.Component {
       style: {
         left: leftMargin,
         height: obstacleDimension,
-        width: obstacleDimension
+        width: obstacleDimension,
+        top: -100
       },
       key: Math.random()
     });
@@ -83,7 +86,7 @@ class App extends React.Component {
         gameOver: false
       },
       () => {
-        this.gameLoop = setInterval(this.runGameLoop, 15);
+        this.gameLoop = window.requestAnimationFrame(this.runGameLoop);
       }
     );
     this.bg.play();
@@ -126,7 +129,8 @@ class App extends React.Component {
     });
   }
   stopGame() {
-    clearInterval(this.gameLoop);
+    // clearInterval(this.gameLoop);
+    window.cancelAnimationFrame(this.gameLoop);
     this.setState({
       gameOver: true
     });
@@ -144,44 +148,49 @@ class App extends React.Component {
   runGameLoop() {
     obstacleStep++;
     let removalIndexes = [];
-    this.boxRefs.map((item, index) => {
-      if (item) {
-        // detect collision
-        if (item.getBoundingClientRect().y > this.windowHeight - 320) {
-          // it is in the colliding zone, detect collision
-          this.isColliding(
-            {
-              top: this.rocketRef.offsetTop + collisionErrorMargin,
-              left: this.rocketRef.offsetLeft + collisionErrorMargin,
-              right:
-                this.rocketRef.offsetLeft +
-                rocketDimension.width -
-                collisionErrorMargin,
-              bottom:
-                this.rocketRef.offsetTop +
-                rocketDimension.height -
-                collisionErrorMargin
-            },
-            {
-              top: item.getBoundingClientRect().y + collisionErrorMargin,
-              left: item.getBoundingClientRect().x + collisionErrorMargin,
-              right:
-                item.getBoundingClientRect().x +
-                obstacleDimension -
-                collisionErrorMargin,
-              bottom:
-                item.getBoundingClientRect().y +
-                obstacleDimension -
-                collisionErrorMargin
-            }
-          ) && this.stopGame();
-        }
-        // remove moved out boxes
-        if (item.getBoundingClientRect().y >= this.windowHeight) {
-          removalIndexes.push(index);
-        }
+    this.setState(
+      {
+        obstacleBoxes: this.state.obstacleBoxes
+      },
+      () => {
+        this.state.obstacleBoxes.map((item, index) => {
+          // detect collision
+          if (item.style.top > this.windowHeight - 320) {
+            // it is in the colliding zone, detect collision
+            this.isColliding(
+              {
+                top: this.rocketRef.offsetTop + collisionErrorMargin,
+                left: this.rocketRef.offsetLeft + collisionErrorMargin,
+                right:
+                  this.rocketRef.offsetLeft +
+                  rocketDimension.width -
+                  collisionErrorMargin,
+                bottom:
+                  this.rocketRef.offsetTop +
+                  rocketDimension.height -
+                  collisionErrorMargin
+              },
+              {
+                top: item.style.top + collisionErrorMargin,
+                left: item.style.left + collisionErrorMargin,
+                right:
+                  item.style.left + obstacleDimension - collisionErrorMargin,
+                bottom:
+                  item.style.top + obstacleDimension - collisionErrorMargin
+              }
+            ) && this.stopGame();
+          }
+          item.style = {
+            ...item.style,
+            top: item.style.top + 3
+          };
+          // remove moved out boxes
+          if (item.style.top >= this.windowHeight) {
+            removalIndexes.push(index);
+          }
+        });
       }
-    });
+    );
     // removal logic
     removalIndexes.length && this.removeLotties(removalIndexes);
     // new insertion logic
@@ -202,6 +211,8 @@ class App extends React.Component {
           rocketHorFactor: this.state.rocketHorFactor + rocketHorSpeed
         });
     }
+    !this.state.gameOver &&
+      (this.gameLoop = window.requestAnimationFrame(this.runGameLoop));
   }
   render() {
     return (
