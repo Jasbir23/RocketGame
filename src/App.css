@@ -17,8 +17,8 @@
   width: 100%;
   position: absolute;
   top: -100%;
-  background: black;
-  opacity: 0.7;
+  background: grey;
+  opacity: 0.8;
   font-size: 45px;
   flex-direction: column;
   color: white;
@@ -39,6 +39,8 @@
   height: 100px;
   width: 100px;
   position: absolute;
+  transform: translateY(125vh);
+  animation: moveDown 6s linear;
 }
 .button {
   top: 0px;

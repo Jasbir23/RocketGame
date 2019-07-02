@@ -62,8 +62,7 @@ class App extends React.Component {
       style: {
         left: leftMargin,
         height: obstacleDimension,
-        width: obstacleDimension,
-        top: -100
+        width: obstacleDimension
       },
       key: Math.random()
     });
@@ -78,19 +77,6 @@ class App extends React.Component {
         );
       }
     );
-  }
-  startGame() {
-    this.setState(
-      {
-        obstacleBoxes: [],
-        gameOver: false
-      },
-      () => {
-        this.gameLoop = window.requestAnimationFrame(this.runGameLoop);
-      }
-    );
-    this.bg.play();
-    this.rocket.play();
   }
   initializeObstacleLottie(container, obstacleIndex) {
     const randomFactor = Math.floor(Math.random() * 10);
@@ -108,6 +94,19 @@ class App extends React.Component {
           ? require(`./assets/grad.json`)
           : require(`./assets/molten.json`)
     });
+  }
+  startGame() {
+    this.setState(
+      {
+        obstacleBoxes: [],
+        gameOver: false
+      },
+      () => {
+        this.gameLoop = window.requestAnimationFrame(this.runGameLoop);
+      }
+    );
+    this.bg.play();
+    this.rocket.play();
   }
   removeLotties(removalIndexesArray) {
     removalIndexesArray.map(removalIndex => {
@@ -129,7 +128,6 @@ class App extends React.Component {
     });
   }
   stopGame() {
-    // clearInterval(this.gameLoop);
     window.cancelAnimationFrame(this.gameLoop);
     this.setState({
       gameOver: true
@@ -148,49 +146,39 @@ class App extends React.Component {
   runGameLoop() {
     obstacleStep++;
     let removalIndexes = [];
-    this.setState(
-      {
-        obstacleBoxes: this.state.obstacleBoxes
-      },
-      () => {
-        this.state.obstacleBoxes.map((item, index) => {
-          // detect collision
-          if (item.style.top > this.windowHeight - 320) {
-            // it is in the colliding zone, detect collision
-            this.isColliding(
-              {
-                top: this.rocketRef.offsetTop + collisionErrorMargin,
-                left: this.rocketRef.offsetLeft + collisionErrorMargin,
-                right:
-                  this.rocketRef.offsetLeft +
-                  rocketDimension.width -
-                  collisionErrorMargin,
-                bottom:
-                  this.rocketRef.offsetTop +
-                  rocketDimension.height -
-                  collisionErrorMargin
-              },
-              {
-                top: item.style.top + collisionErrorMargin,
-                left: item.style.left + collisionErrorMargin,
-                right:
-                  item.style.left + obstacleDimension - collisionErrorMargin,
-                bottom:
-                  item.style.top + obstacleDimension - collisionErrorMargin
-              }
-            ) && this.stopGame();
-          }
-          item.style = {
-            ...item.style,
-            top: item.style.top + 3
-          };
-          // remove moved out boxes
-          if (item.style.top >= this.windowHeight) {
-            removalIndexes.push(index);
-          }
-        });
+    this.boxRefs.map((item, index) => {
+      if (item) {
+        // detect collision
+        if (item.getBoundingClientRect().y > this.windowHeight - 320) {
+          // it is in the colliding zone, detect collision
+          const boundingRect = item.getBoundingClientRect();
+          this.isColliding(
+            {
+              top: this.rocketRef.offsetTop + collisionErrorMargin,
+              left: this.rocketRef.offsetLeft + collisionErrorMargin,
+              right:
+                this.rocketRef.offsetLeft +
+                rocketDimension.width -
+                collisionErrorMargin,
+              bottom:
+                this.rocketRef.offsetTop +
+                rocketDimension.height -
+                collisionErrorMargin
+            },
+            {
+              top: boundingRect.y + collisionErrorMargin,
+              left: boundingRect.x + collisionErrorMargin,
+              right: boundingRect.x + obstacleDimension - collisionErrorMargin,
+              bottom: boundingRect.y + obstacleDimension - collisionErrorMargin
+            }
+          ) && this.stopGame();
+        }
+        // remove moved out boxes
+        if (item.getBoundingClientRect().y >= this.windowHeight) {
+          removalIndexes.push(index);
+        }
       }
-    );
+    });
     // removal logic
     removalIndexes.length && this.removeLotties(removalIndexes);
     // new insertion logic
