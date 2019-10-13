@@ -3,13 +3,17 @@ import "./App.css";
 import lottie from "lottie-web";
 
 let obstacleStep = 0;
-const rocketHorSpeed = 6;
-const obstacleAppearInterval = 150;
-const obstacleDimension = 100;
-const collisionErrorMargin = 10;
+const rocketHorSpeed = 3;
+const obstacleAppearInterval = 20;
+const obstacleDimension = 40;
+const trunkPos = 11;
+const collisionBoxWidth = 3;
+const collisionErrorMarginY = 30;
+const collisionErrorMarginX = trunkPos;
+const rocketTop = 140;
 const rocketDimension = {
-  width: 50,
-  height: 100
+  width: 10,
+  height: 10
 };
 
 class App extends React.Component {
@@ -20,15 +24,17 @@ class App extends React.Component {
     this.state = {
       obstacleBoxes: [],
       rocketHorFactor: this.windowWidth / 2 - 25,
-      gameOver: false
+      gameOver: false,
+      rocketPos: -rocketDimension.height
     };
     this.boxRefs = [];
+    this.collisionBoxRefs = [];
     this.runGameLoop = this.runGameLoop.bind(this);
     this.allObstacleLotties = {};
   }
   componentDidMount() {
-    this.initializeBg();
-    this.initializeRocket();
+    // this.initializeBg();
+    // this.initializeRocket();
     this.startGame();
   }
   componentWillUnmount() {
@@ -56,7 +62,7 @@ class App extends React.Component {
     });
   }
   insertNewObstacle() {
-    const leftMargin = Math.random() * (this.windowWidth - 100);
+    const leftMargin = Math.random() * this.windowWidth;
     const boxArrayLength = this.state.obstacleBoxes.length;
     this.state.obstacleBoxes.push({
       style: {
@@ -84,15 +90,15 @@ class App extends React.Component {
     this.allObstacleLotties[key] = lottie.loadAnimation({
       container: container,
       animType: "svg",
-      autoplay: true,
-      loop: true,
+      autoplay: false,
+      loop: false,
       rendererSettings: {
         preserveAspectRatio: "none"
       },
       animationData:
         randomFactor > 5
-          ? require(`./assets/grad.json`)
-          : require(`./assets/molten.json`)
+          ? require(`./assets/tree.json`)
+          : require(`./assets/tree.json`)
     });
   }
   startGame() {
@@ -105,8 +111,8 @@ class App extends React.Component {
         this.gameLoop = window.requestAnimationFrame(this.runGameLoop);
       }
     );
-    this.bg.play();
-    this.rocket.play();
+    // this.bg.play();
+    // this.rocket.play();
   }
   removeLotties(removalIndexesArray) {
     removalIndexesArray.map(removalIndex => {
@@ -121,19 +127,27 @@ class App extends React.Component {
           this.state.obstacleBoxes[removalIndex].key
         ];
       }
+      this.collisionBoxRefs.splice(removalIndex, 1);
       this.state.obstacleBoxes.splice(removalIndex, 1);
       this.setState({
         obstacleBoxes: this.state.obstacleBoxes
       });
     });
   }
-  stopGame() {
+
+  stopGame(key) {
+    // console.log(this.allObstacleLotties[key], key, this.allObstacleLotties);
+    this.allObstacleLotties[key].playSegments([0, 4]);
     window.cancelAnimationFrame(this.gameLoop);
     this.setState({
       gameOver: true
     });
-    this.bg.stop();
-    this.rocket.stop();
+
+    this.boxRefs.forEach(item => {
+      item && (item.style.webkitAnimationPlayState = "paused");
+    });
+    // this.bg.stop();
+    // this.rocket.stop();
   }
   isColliding(a, b) {
     return (
@@ -146,35 +160,35 @@ class App extends React.Component {
   runGameLoop() {
     obstacleStep++;
     let removalIndexes = [];
-    this.boxRefs.map((item, index) => {
+    this.boxRefs.forEach((item, index) => {
       if (item) {
-        // detect collision
-        if (item.getBoundingClientRect().y > this.windowHeight - 320) {
+        const collisionBox = this.collisionBoxRefs[
+          index
+        ].getBoundingClientRect();
+        //detect collision
+        if (
+          item.getBoundingClientRect().y <
+          rocketTop + rocketDimension.height
+        ) {
           // it is in the colliding zone, detect collision
           const boundingRect = item.getBoundingClientRect();
           this.isColliding(
             {
-              top: this.rocketRef.offsetTop + collisionErrorMargin,
-              left: this.rocketRef.offsetLeft + collisionErrorMargin,
-              right:
-                this.rocketRef.offsetLeft +
-                rocketDimension.width -
-                collisionErrorMargin,
-              bottom:
-                this.rocketRef.offsetTop +
-                rocketDimension.height -
-                collisionErrorMargin
+              top: this.rocketRef.offsetTop,
+              left: this.rocketRef.offsetLeft,
+              right: this.rocketRef.offsetLeft + rocketDimension.width,
+              bottom: this.rocketRef.offsetTop + rocketDimension.height
             },
             {
-              top: boundingRect.y + collisionErrorMargin,
-              left: boundingRect.x + collisionErrorMargin,
-              right: boundingRect.x + obstacleDimension - collisionErrorMargin,
-              bottom: boundingRect.y + obstacleDimension - collisionErrorMargin
+              top: collisionBox.y,
+              left: collisionBox.x,
+              right: collisionBox.x + collisionBoxWidth,
+              bottom: collisionBox.y + 10
             }
-          ) && this.stopGame();
+          ) && this.stopGame(this.state.obstacleBoxes[index].key);
         }
-        // remove moved out boxes
-        if (item.getBoundingClientRect().y >= this.windowHeight) {
+        //remove moved out boxes
+        if (item.getBoundingClientRect().y < -obstacleDimension) {
           removalIndexes.push(index);
         }
       }
@@ -194,7 +208,8 @@ class App extends React.Component {
         });
     }
     if (this.state.rightMoving) {
-      this.state.rocketHorFactor < this.windowWidth - 50 - rocketHorSpeed &&
+      this.state.rocketHorFactor <
+        this.windowWidth - rocketDimension.width - rocketHorSpeed &&
         this.setState({
           rocketHorFactor: this.state.rocketHorFactor + rocketHorSpeed
         });
@@ -206,6 +221,15 @@ class App extends React.Component {
     return (
       <div className="mainContainer">
         <div ref={ref => (this.continerRef = ref)} className="bg" />
+        <div
+          ref={ref => (this.rocketRef = ref)}
+          className={`${
+            this.state.gameOver ? "rocketStop" : "rocketContainer"
+          } ${this.state.leftMoving ? "tiltLeft" : ""} ${
+            this.state.rightMoving ? "tiltRight" : ""
+          }`}
+          style={{ left: this.state.rocketHorFactor, top: rocketTop }}
+        />
         {this.state.obstacleBoxes.map((item, index) => {
           return (
             <div
@@ -213,26 +237,25 @@ class App extends React.Component {
               ref={ref => (this.boxRefs[index] = ref)}
               className="box"
               style={item.style}
-            />
+            >
+              <span
+                className="collisionBox"
+                ref={ref => (this.collisionBoxRefs[index] = ref)}
+              />
+            </div>
           );
         })}
         <div
-          ref={ref => (this.rocketRef = ref)}
-          className={`rocketContainer ${
-            this.state.leftMoving ? "tiltLeft" : ""
-          } ${this.state.rightMoving ? "tiltRight" : ""}`}
-          style={{ left: this.state.rocketHorFactor }}
-        />
-        <span
-          onTouchStart={e => this.setState({ leftMoving: true })}
-          onTouchEnd={e => this.setState({ leftMoving: false })}
+          onTouchStart={() => this.setState({ leftMoving: true })}
+          onTouchEnd={() => this.setState({ leftMoving: false })}
           className="leftBut button"
         />
-        <span
+        <div
           className="rightBut button"
-          onTouchStart={e => this.setState({ rightMoving: true })}
-          onTouchEnd={e => this.setState({ rightMoving: false })}
+          onTouchStart={() => this.setState({ rightMoving: true })}
+          onTouchEnd={() => this.setState({ rightMoving: false })}
         />
+        <span className="ind">{`Mov ${this.state.rocketHorFactor}`}</span>
         <div className={`gameOverlay ${this.state.gameOver ? "visible" : ""}`}>
           GAME OVER
           <span onClick={() => this.startGame()}>RETRY</span>
